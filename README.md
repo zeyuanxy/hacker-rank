@@ -1,4 +1,4 @@
 HackerRank
 ==========
 
-The code of HackerRank
+The code of HackerRank.
