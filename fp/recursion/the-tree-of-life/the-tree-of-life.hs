@@ -15,9 +15,9 @@ data Tree a
     | Branch (Tree a) a (Tree a)
       deriving (Functor, Show)
       
-getValue :: Tree a -> a
-getValue (Left a) = a
-getValue (Branch _ a _) = a
+getRoot :: Tree a -> a
+getRoot (Left a) = a
+getRoot (Branch _ a _) = a
 
       
 type Rule a = a -> a -> a -> a -> a
@@ -31,7 +31,7 @@ nextTree rule = withParent False
     where withParent p t = case t of
         Leaf a -> Leaf (rule p False v False)
         Branch l a r -> Branch (withParent a l)
-                               (rule p (getValue l) a (getValue r))
+                               (rule p (getRoot l) a (getRoot r))
                                (withParent a r) 
 
 parseTree :: Parser (Tree Bool)
@@ -52,6 +52,29 @@ parseQuery s = (read si, path)
     where (si:sp:_) = words s
           path = init . tail $ sp
 
+cellToStr :: Bool -> String
+cellToStr v = if v then "X" else "."
+
+printTree :: Tree Bool -> [Dir] -> IO ()
+printTree t [] = putStrLn . cellToStr . getRoot $ t
+printTree (Branch l _ _) ('<':ps) = executeQuery l ps
+printTree (Branch _ _ r) ('>':ps) = executeQuery r ps
+printTree _ _ = error "no such path in the tree"
+
+forward :: ([a], [a]) -> ([a], [a])
+forward (x:xs, ys) = (x, x:ys)
+forward _ = error "no such tree"
+
+backward :: ([a], [a]) -> ([a], [a])
+backward (xs, y:ys) = (y:xs, ys)
+backward _ = error "no such tree"
+
+here :: ([a], [a]) -> a
+here = head . fst
+
+fTimes :: (a -> a) -> Int -> a -> a
+fTimes _ 0 = id
+fTimes f n = f . fTimes f (n - 1)
 
 main :: IO ()
 main = do
@@ -61,6 +84,9 @@ main = do
     n <- readLn
     evalStateT (replicateM_ n (do
                                 (i, ps) <- lift (parseQuery <$> getLine)
-                                
+                                modify (if i >= 0 then fTimes forward i
+                                        else fTimes backward (-i))
+                                t <- gets here
+                                lift $ printTree t ps
                                 ))
                (trees, [])
