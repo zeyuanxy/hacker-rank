@@ -16,7 +16,7 @@ data Tree a
       deriving (Functor, Show)
       
 getRoot :: Tree a -> a
-getRoot (Left a) = a
+getRoot (Leaf a) = a
 getRoot (Branch _ a _) = a
 
       
@@ -24,26 +24,33 @@ type Rule a = a -> a -> a -> a -> a
 
 makeRule :: Word16 -> Rule Bool
 makeRule ruleEncoding v1 v2 v3 v4 = testBit ruleEncoding pos
-    where pos = sum (ZipWith (*) (map fromEnum [v4, v3, v2, v1]) (iterate (*2 ) 1))
+    where pos = sum (zipWith (*) (map fromEnum [v4, v3, v2, v1]) (iterate (*2) 1))
 
 nextTree :: Rule Bool -> Tree Bool -> Tree Bool
 nextTree rule = withParent False
-    where withParent p t = case t of
-        Leaf a -> Leaf (rule p False v False)
-        Branch l a r -> Branch (withParent a l)
+    where 
+        withParent :: Bool -> Tree Bool -> Tree Bool
+        withParent p t = case t of
+            Leaf a -> Leaf (rule p False a False)
+            Branch l a r -> Branch (withParent a l)
                                (rule p (getRoot l) a (getRoot r))
                                (withParent a r) 
-
+                               
+buildTrees :: Word16 -> Tree Bool -> [Tree Bool]
+buildTrees i = iterate (nextTree (makeRule i))                               
+                              
 parseTree :: Parser (Tree Bool)
 parseTree = parseBranch <|> parseLeaf
-    where parseCell = (char 'X' >> return True) <|> (char '.' >> return False)
-          parseLeaf = Leaf <$> parseCell
-          parseBranch = between (char '(') (char ')')
-                                (Branch <$> parseTree <*> (space *> parseCell *< space) <*> parseTree)
-                                
-buildTrees :: Word16 -> Tree Bool -> [Tree Bool]
-buildTrees i = iterate (nextTree (makeRule i))
-
+    where 
+        parseCell = (char 'X' >> return True) <|> (char '.' >> return False)
+        parseLeaf = Leaf <$> parseCell
+        parseBranch = between (char '(') (char ')')
+                                (Branch <$> parseTree <*> (space *> parseCell <* space) <*> parseTree)
+                       
+getOrDie :: Show a => Either a b -> b
+getOrDie (Left v) = error . show $ v
+getOrDie (Right v) = v
+                      
 
 type Dir = Char
 
@@ -57,12 +64,12 @@ cellToStr v = if v then "X" else "."
 
 printTree :: Tree Bool -> [Dir] -> IO ()
 printTree t [] = putStrLn . cellToStr . getRoot $ t
-printTree (Branch l _ _) ('<':ps) = executeQuery l ps
-printTree (Branch _ _ r) ('>':ps) = executeQuery r ps
+printTree (Branch l _ _) ('<':ps) = printTree l ps
+printTree (Branch _ _ r) ('>':ps) = printTree r ps
 printTree _ _ = error "no such path in the tree"
 
 forward :: ([a], [a]) -> ([a], [a])
-forward (x:xs, ys) = (x, x:ys)
+forward (x:xs, ys) = (xs, x:ys)
 forward _ = error "no such tree"
 
 backward :: ([a], [a]) -> ([a], [a])
@@ -80,7 +87,7 @@ main :: IO ()
 main = do
     trees <- buildTrees
                 <$> readLn
-                <*> ((parse (parseTree <* (spaces >> eof))) <$> getLine)
+                <*> ((getOrDie . parse (parseTree <* (spaces >> eof)) "tree") <$> getLine)
     n <- readLn
     evalStateT (replicateM_ n (do
                                 (i, ps) <- lift (parseQuery <$> getLine)
