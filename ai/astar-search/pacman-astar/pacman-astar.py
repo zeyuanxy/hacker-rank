@@ -26,7 +26,7 @@ while len(queue) > 0:
     possible_moves = []
     for direction in directions:
         next_x, next_y = x + direction[0], y + direction[1]
-        if next_x < 0 or next_x >= n or next_y < 0 and next_y >= n:
+        if next_x < 0 or next_x >= n or next_y < 0 or next_y >= n:
             continue
 
         if grid[next_x][next_y] == "-" or grid[next_x][next_y] == ".":
