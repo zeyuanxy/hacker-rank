@@ -1,0 +1,9 @@
+(select city, char_length(city) as city_length
+ from station
+ order by city_length
+ limit 1)
+union all
+(select city, char_length(city) as city_length
+ from station
+ order by city_length desc
+ limit 1);
