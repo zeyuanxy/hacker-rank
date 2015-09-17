@@ -1,0 +1,4 @@
+select cast(LAT_N as decimal (7, 4))
+from (select LAT_N, ROW_NUMBER() over (order by LAT_N) as ROWNO
+      from station) as X
+where ROWNO = (select round((count(*) + 1) / 2, 0) from station);
