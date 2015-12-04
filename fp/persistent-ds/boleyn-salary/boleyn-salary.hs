@@ -1,9 +1,14 @@
 -- @Author: Zeyuan Shang
 -- @Date:   2015-12-04 01:40:40
 -- @Last Modified by:   Zeyuan Shang
--- @Last Modified time: 2015-12-04 02:22:58
+-- @Last Modified time: 2015-12-04 02:47:01
+import Control.Monad
+import Data.Graph
+import qualified Data.Array as A
+import qualified Data.IntMap as M
 
 
+----- naive AVL -----
 data AVLTree a = Null | Node a (AVLTree a) (AVLTree a) Int Int -- height size
                  deriving Show
                  
@@ -57,3 +62,43 @@ select (Node root l r _ _) k
 	| rank > k = select l k
 	| otherwise = select r (k - rank)
 	where rank = 1 + size l
+
+----- naive AVL -----
+
+----- main -----
+
+toTwo [] = []
+toTwo (x:y:rs) = (y, x):toTwo rs
+
+walk Null = []
+walk (Node root l r _ _) = this : walk l ++ walk r
+
+merge ta tb
+	| size ta >= size tb = foldl insert ta (walk tb)
+	| otherwise = merge tb ta
+
+build :: A.Array Int Int -> Graph -> M.IntMap (AVLTree (Int, Int)) -> Int -> M.IntMap (AVLTree (Int, Int))
+build salaries graph m u = let vs = g A.! u
+						   	   ut = foldl1 merge $ (foldl insert Null [(salaries A.! v, v) | v <- vs]) 
+						   	   : [m M.! v | v <- vs]
+						   	in M.insert u ut m
+
+main :: IO ()
+main = do
+	inputs <- getContents >>= return . map (read :: String -> Int) . words
+	let (n:m:rest) = inputs
+		(edges', rest') = splitAt (2 * (n - 1)) rest
+		edges = toTwo edges'
+		(salaries', rest'') = splitAt n rest'
+		queries = toTwo rest''
+
+		graph = buildG (1, n) edges'
+		salaries = A.listArray (1, n) salaries
+
+		build' = build salaries graph
+		topOrder = reverse $ topSort graph
+		trees = M.toAscList $ foldl build' M.empty topOrder
+		vecs = A.array (1, n) trees
+		results = tail $ scanl (\n (k, u) -> snd $ select (vecs A.! (n + u)) k) 0 queries
+	mapM_ print results
+----- main -----
