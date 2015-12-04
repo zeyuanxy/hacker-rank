@@ -1,7 +1,7 @@
 -- @Author: Zeyuan Shang
 -- @Date:   2015-12-04 01:40:40
 -- @Last Modified by:   Zeyuan Shang
--- @Last Modified time: 2015-12-04 02:18:41
+-- @Last Modified time: 2015-12-04 02:22:58
 
 
 data AVLTree a = Null | Node a (AVLTree a) (AVLTree a) Int Int -- height size
@@ -49,3 +49,11 @@ insert Null value = Node value Null Null 1 1
 insert (Node root l r h s) value = balance . update $ Node root newLeft newRight h s
 	where newLeft = if value < this then insert l value else l
 		  newRight = if value < this then r else insert r value
+
+select :: AVLTree a -> Int -> a -- find kth element in the AVL tree
+select Null k = error "null"
+select (Node root l r _ _) k 
+	| rank == k = root
+	| rank > k = select l k
+	| otherwise = select r (k - rank)
+	where rank = 1 + size l
