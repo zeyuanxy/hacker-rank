@@ -3,7 +3,7 @@
 # @Author: Zeyuan Shang
 # @Date:   2015-12-04 22:04:03
 # @Last Modified by:   Zeyuan Shang
-# @Last Modified time: 2015-12-04 22:19:03
+# @Last Modified time: 2015-12-04 22:45:58
 import os
 import numpy as np
 import sys
@@ -59,14 +59,13 @@ def prepareTrainingData(data):
     for d in data:
         img = d[0]
         output = list(d[1])
-        i=0
         #cut the image into 5 pices !
         startLocX = 7
         endLocX = 21
         startLocY = 6
         increment = 8
         for i in range(5):
-            char = img[startLocX:endLocX,startLocY:startLocY+increment]
+            char = img[startLocX:endLocX, startLocY:startLocY + increment]
             #remove the background by thresholding
             #turn the background pixels to white
             char[char > threshold] = 255
@@ -89,7 +88,6 @@ def main():
     clf.fit(trainingdata[0], trainingdata[1])
 
     #now the classifier can be used to predict any new captcha!
-    print clf
 
 if __name__ == "__main__":
     main()
