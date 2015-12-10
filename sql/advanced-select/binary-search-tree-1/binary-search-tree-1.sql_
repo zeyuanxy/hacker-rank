@@ -1,0 +1,8 @@
+SELECT N,
+    CASE
+        WHEN N = ANY(SELECT P FROM BST) AND P = ANY(SELECT N FROM BST) THEN "Inner"
+        WHEN P = ANY(SELECT N FROM BST) THEN "Leaf"
+        ELSE "Root" 
+    END
+FROM BST
+ORDER BY N;
