@@ -1,0 +1,4 @@
+SELECT S.NAME
+FROM Students AS S, Friends as F, Packages as P1, Packages as P2
+WHERE S.ID = F.ID AND S.ID = P1.ID AND F.Friend_ID = P2.ID AND P2.Salary > P1.Salary
+ORDER BY P2.Salary;
