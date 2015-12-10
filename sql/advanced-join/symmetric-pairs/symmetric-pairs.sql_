@@ -1,0 +1,6 @@
+SELECT 
+    CASE WHEN x <= y THEN x else y END as n1,
+    CASE WHEN x <= y THEN y else x END as n2
+FROM Functions 
+GROUP BY n1, n2
+HAVING COUNT(*) = 2;
