@@ -3,7 +3,7 @@
 # @Author: Zeyuan Shang
 # @Date:   2016-01-13 16:08:21
 # @Last Modified by:   Zeyuan Shang
-# @Last Modified time: 2016-01-13 16:08:29
+# @Last Modified time: 2016-01-13 16:24:51
 import json
 import sys
 from sklearn.feature_extraction.text import HashingVectorizer
@@ -40,7 +40,7 @@ def main():
     testData = read_test_data()
     testLabel = svm.predict(testData)
     for e in testLabel: 
-        print(e)
+        print e
     
 if __name__ == "__main__":
     main()
