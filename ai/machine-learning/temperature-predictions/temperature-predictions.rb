@@ -1,11 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/ruby
 # -*- coding: utf-8 -*-
 # @Author: Zeyuan Shang
 # @Date:   2016-01-17 12:15:40
 # @Last Modified by:   Zeyuan Shang
-# @Last Modified time: 2016-01-17 12:15:46
-#!/usr/bin/ruby
-
+# @Last Modified time: 2016-01-19 20:13:01
 n = gets.to_i
 gets
 result = [[nil] * n, [nil] * n]
